@@ -223,109 +223,107 @@ export default function GallerySection({ items: initialItems }: Props) {
 
         {/* ── Masonry Grid ── */}
         {items.length > 0 && (
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
-            {items.map((item, i) => {
-              const [c1, c2] = PLACEHOLDER_GRADIENTS[i % 6]
-              const isNew = newItemIds.has(item.id)
-              // Vary aspect ratios using paddingBottom trick (bulletproof in all browsers)
-              const pb = i % 4 === 0 ? '100%' : i % 4 === 1 ? '133%' : i % 4 === 2 ? '75%' : '150%'
+          <>
+            {/* All card styles are fully inline — no Tailwind dependency for critical rendering */}
+            <style>{`
+              .gallery-card { break-inside: avoid; margin-bottom: 12px; cursor: pointer; }
+              .gallery-card-inner {
+                position: relative; width: 100%; overflow: hidden;
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+              }
+              .gallery-card-inner:hover { transform: scale(1.03); box-shadow: 0 8px 40px rgba(0,0,0,0.2); }
+              .gallery-card-img {
+                position: absolute; top: 0; left: 0;
+                width: 100%; height: 100%;
+                object-fit: cover; display: block;
+                transition: transform 0.5s ease;
+              }
+              .gallery-card-inner:hover .gallery-card-img { transform: scale(1.08); }
+              .gallery-card-overlay {
+                position: absolute; inset: 0;
+                background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 60%);
+                opacity: 0; transition: opacity 0.3s ease;
+                display: flex; flex-direction: column; justify-content: flex-end; padding: 10px;
+              }
+              .gallery-card-inner:hover .gallery-card-overlay { opacity: 1; }
+              .gallery-grid { columns: 2; gap: 12px; }
+              @media (min-width: 768px)  { .gallery-grid { columns: 3; } }
+              @media (min-width: 1024px) { .gallery-grid { columns: 4; } }
+            `}</style>
+            <div className="gallery-grid">
+              {items.map((item, i) => {
+                const [c1, c2] = PLACEHOLDER_GRADIENTS[i % 6]
+                const isNew = newItemIds.has(item.id)
+                const heights = ['100%', '133%', '75%', '125%']
+                const pb = heights[i % 4]
 
-              return (
-                <div
-                  key={item.id}
-                  className={`break-inside-avoid mb-3 md:mb-4 cursor-pointer group transition-all duration-700 ${
-                    visible ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  style={{
-                    transitionDelay: `${Math.min(i * 0.06, 0.6)}s`,
-                    transform: visible ? `rotate(${CARD_ROTATIONS[i % 8]})` : 'translateY(40px)',
-                  }}
-                  onClick={() => openLightbox(i)}
-                >
-                  {/* paddingBottom aspect ratio wrapper — works everywhere */}
+                return (
                   <div
-                    className="rounded-2xl overflow-hidden shadow-lg group-hover:shadow-2xl"
+                    key={item.id}
+                    className="gallery-card"
                     style={{
-                      position: 'relative',
-                      width: '100%',
-                      paddingBottom: pb,
-                      boxShadow: isNew ? '0 0 0 3px #FF6B9D, 0 0 30px rgba(255,107,157,0.5)' : undefined,
-                      transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                      transform: 'translateZ(0)', // GPU layer
+                      opacity: visible ? 1 : 0,
+                      transform: visible ? `rotate(${CARD_ROTATIONS[i % 8]})` : 'translateY(30px)',
+                      transition: `opacity 0.6s ease ${Math.min(i * 0.05, 0.5)}s, transform 0.6s ease ${Math.min(i * 0.05, 0.5)}s`,
                     }}
+                    onClick={() => openLightbox(i)}
                   >
-                    {/* All children absolutely positioned inside the padding box */}
-                    {item.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.url}
-                        alt={item.caption || 'Ekadya'}
-                        loading="lazy"
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          transition: 'transform 0.5s ease',
-                          display: 'block',
-                        }}
-                        className="group-hover:scale-105"
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: `linear-gradient(135deg, ${c1}, ${c2})`,
-                        }}
-                      >
-                        <div className="text-5xl" style={{ animation: `float ${3 + i * 0.3}s ease-in-out infinite` }}>
-                          {PLACEHOLDER_EMOJIS[i % 6]}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* NEW badge */}
-                    {isNew && (
-                      <div
-                        className="font-fairy text-white text-xs"
-                        style={{
-                          position: 'absolute', top: 8, left: 8,
-                          padding: '2px 8px', borderRadius: 999,
-                          background: 'linear-gradient(135deg, #FF6B9D, #C9B1FF)',
-                          animation: 'pulse-soft 1s ease-in-out infinite',
-                          boxShadow: '0 0 12px rgba(255,107,157,0.6)',
-                          zIndex: 10,
-                        }}
-                      >
-                        ✨ New
-                      </div>
-                    )}
-
-                    {/* Hover overlay */}
                     <div
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      className="gallery-card-inner"
                       style={{
-                        position: 'absolute', inset: 0,
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.05) 60%, transparent 100%)',
-                        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-                        padding: '10px',
+                        paddingBottom: pb,
+                        boxShadow: isNew ? '0 0 0 3px #FF6B9D, 0 0 30px rgba(255,107,157,0.5)' : undefined,
                       }}
                     >
-                      {item.caption && (
-                        <p className="font-fairy text-white text-xs leading-tight drop-shadow-lg">{item.caption}</p>
+                      {item.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.url}
+                          alt={item.caption || 'Ekadya'}
+                          loading="lazy"
+                          className="gallery-card-img"
+                        />
+                      ) : (
+                        <div style={{
+                          position: 'absolute', inset: 0,
+                          background: `linear-gradient(135deg, ${c1}, ${c2})`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '3rem',
+                        }}>
+                          {PLACEHOLDER_EMOJIS[i % 6]}
+                        </div>
                       )}
-                      <p className="font-fairy text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>tap to open 🔍</p>
+
+                      {isNew && (
+                        <div style={{
+                          position: 'absolute', top: 8, left: 8, zIndex: 10,
+                          padding: '2px 10px', borderRadius: 999,
+                          background: 'linear-gradient(135deg, #FF6B9D, #C9B1FF)',
+                          color: 'white', fontSize: '11px', fontFamily: 'var(--font-fairy)',
+                          boxShadow: '0 0 12px rgba(255,107,157,0.6)',
+                        }}>
+                          ✨ New
+                        </div>
+                      )}
+
+                      <div className="gallery-card-overlay">
+                        {item.caption && (
+                          <p style={{ color: 'white', fontSize: '11px', fontFamily: 'var(--font-fairy)', lineHeight: 1.4 }}>
+                            {item.caption}
+                          </p>
+                        )}
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginTop: 2, fontFamily: 'var(--font-fairy)' }}>
+                          tap to open 🔍
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          </>
         )}
       </div>
 
