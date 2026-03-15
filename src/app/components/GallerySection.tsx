@@ -50,9 +50,9 @@ export default function GallerySection({ items: initialItems }: Props) {
           if (newOnes.length === 0) return prev
           // Mark new ones for highlight
           setNewItemIds(old => {
-            const next = new Set([...old, ...newOnes.map(n => n.id)])
+            const next = new Set(Array.from(old).concat(newOnes.map(n => n.id)))
             newOnes.forEach(n => setTimeout(() => {
-              setNewItemIds(s => { const c = new Set(s); c.delete(n.id); return c })
+              setNewItemIds(s => { const c = new Set(Array.from(s)); c.delete(n.id); return c })
             }, 4000))
             return next
           })
@@ -71,9 +71,9 @@ export default function GallerySection({ items: initialItems }: Props) {
             if (prev.some(p => p.id === newItem.id)) return prev
             return [newItem, ...prev]
           })
-          setNewItemIds(prev => new Set([...prev, newItem.id]))
+          setNewItemIds(prev => new Set(Array.from(prev).concat(newItem.id)))
           setTimeout(() => {
-            setNewItemIds(prev => { const n = new Set(prev); n.delete(newItem.id); return n })
+            setNewItemIds(prev => { const n = new Set(Array.from(prev)); n.delete(newItem.id); return n })
           }, 4000)
         }
       )
