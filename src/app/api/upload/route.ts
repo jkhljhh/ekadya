@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Server-side client using service role key (bypasses RLS for admin uploads)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function POST(req: NextRequest) {
+  // Initialise inside the handler so it only runs at request time,
+  // not at build time when env vars are not available on Vercel.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceKey) {
+    return NextResponse.json({ error: 'Missing Supabase env vars' }, { status: 500 })
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, serviceKey)
+
   try {
     const formData = await req.formData()
     const file     = formData.get('file') as File | null
@@ -29,7 +34,6 @@ export async function POST(req: NextRequest) {
     const { data } = supabaseAdmin.storage.from('ekadya-media').getPublicUrl(filePath)
     const publicUrl = data.publicUrl
 
-    // Insert into gallery table
     const { error: dbError } = await supabaseAdmin.from('gallery').insert({
       url: publicUrl,
       caption,
@@ -39,7 +43,7 @@ export async function POST(req: NextRequest) {
     if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 })
 
     return NextResponse.json({ url: publicUrl })
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
