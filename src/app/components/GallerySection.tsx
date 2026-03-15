@@ -22,7 +22,7 @@ export default function GallerySection({ items: initialItems }: Props) {
   const [items, setItems] = useState<GalleryItem[]>(initialItems)
   const [newItemIds, setNewItemIds] = useState<Set<string>>(new Set())
   const sectionRef = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(true) // always visible — no entrance hide
 
   // ── Lightbox state ────────────────────────────────────────────────────
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
@@ -188,7 +188,7 @@ export default function GallerySection({ items: initialItems }: Props) {
       <div className="relative z-10 max-w-7xl mx-auto">
 
         {/* ── Header ── */}
-        <div className={`text-center mb-16 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <div className="text-center mb-16">
           <div className="text-5xl mb-4" style={{ animation: 'float 4s ease-in-out infinite' }}>📸</div>
           <h2 className="font-display font-black text-5xl md:text-7xl text-gradient-rose mb-4">
             Memory Garden
@@ -210,7 +210,7 @@ export default function GallerySection({ items: initialItems }: Props) {
 
         {/* ── Empty state ── */}
         {items.length === 0 && (
-          <div className={`text-center py-20 transition-all duration-1000 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="text-center py-20">
             <div className="text-8xl mb-6" style={{ animation: 'float 4s ease-in-out infinite' }}>🌱</div>
             <p className="font-display font-bold text-2xl mb-2" style={{ color: '#9B72CF' }}>
               The garden is waiting to bloom
@@ -263,11 +263,7 @@ export default function GallerySection({ items: initialItems }: Props) {
                   <div
                     key={item.id}
                     className="gallery-card"
-                    style={{
-                      opacity: visible ? 1 : 0,
-                      transform: visible ? `rotate(${CARD_ROTATIONS[i % 8]})` : 'translateY(30px)',
-                      transition: `opacity 0.6s ease ${Math.min(i * 0.05, 0.5)}s, transform 0.6s ease ${Math.min(i * 0.05, 0.5)}s`,
-                    }}
+                    style={{ transform: `rotate(${CARD_ROTATIONS[i % 8]})` }}
                     onClick={() => openLightbox(i)}
                   >
                     <div
