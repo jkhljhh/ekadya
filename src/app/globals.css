@@ -1,0 +1,240 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Dancing+Script:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Cormorant Garamond', serif;
+  --font-fairy: 'Dancing Script', cursive;
+  --garden-blush:    #FFD6E0;
+  --garden-rose:     #FF6B9D;
+  --garden-lavender: #C9B1FF;
+  --garden-mint:     #B8F0D8;
+  --garden-gold:     #FFD166;
+  --garden-deep:     #1A0A2E;
+  --garden-cream:    #FFF8F0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--garden-cream);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ─── Custom Cursor ─────────────────────────── */
+.cursor-main {
+  position: fixed;
+  width: 20px; height: 20px;
+  background: radial-gradient(circle, #FF6B9D, #C9B1FF);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s ease, width 0.2s ease, height 0.2s ease;
+  mix-blend-mode: multiply;
+}
+.cursor-trail {
+  position: fixed;
+  width: 40px; height: 40px;
+  border: 1px solid rgba(255,107,157,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s ease, opacity 0.3s ease;
+}
+.cursor-main.clicking { width: 12px; height: 12px; }
+.cursor-trail.clicking { width: 56px; height: 56px; opacity: 0.3; }
+
+/* ─── Scrollbar ─────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #FFF0F7; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #FF6B9D, #C9B1FF);
+  border-radius: 10px;
+}
+
+/* ─── Selection ─────────────────────────────── */
+::selection {
+  background: rgba(255,107,157,0.3);
+  color: #1A0A2E;
+}
+
+/* ─── Floating Particles ────────────────────── */
+.particle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  animation: petal-fall linear infinite;
+}
+
+/* ─── Glass Morphism ────────────────────────── */
+.glass {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.glass-dark {
+  background: rgba(26,10,46,0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(201,177,255,0.2);
+}
+
+/* ─── Text Gradient ─────────────────────────── */
+.text-gradient-rose {
+  background: linear-gradient(135deg, #FF6B9D, #FF8FAB, #C9B1FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-gold {
+  background: linear-gradient(135deg, #FFD166, #FFAA33, #FFD166);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+.text-gradient-magical {
+  background: linear-gradient(135deg, #FF6B9D, #C9B1FF, #B8F0D8, #FFD166);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ─── Petal Fall ────────────────────────────── */
+@keyframes petal-fall {
+  0%   { transform: translateY(-20px) rotate(0deg) translateX(0);   opacity: 0; }
+  10%  { opacity: 0.8; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(110vh) rotate(540deg) translateX(60px); opacity: 0; }
+}
+
+/* ─── Garden Glow ───────────────────────────── */
+.garden-glow {
+  box-shadow:
+    0 0 30px rgba(255,107,157,0.3),
+    0 0 60px rgba(201,177,255,0.2),
+    0 20px 60px rgba(0,0,0,0.1);
+}
+.garden-glow:hover {
+  box-shadow:
+    0 0 50px rgba(255,107,157,0.5),
+    0 0 100px rgba(201,177,255,0.3),
+    0 30px 80px rgba(0,0,0,0.15);
+  transition: box-shadow 0.4s ease;
+}
+
+/* ─── Butterfly Wing Flap ───────────────────── */
+@keyframes wing-flap {
+  0%, 100% { transform: scaleX(1) rotateY(0deg); }
+  50%       { transform: scaleX(0.3) rotateY(60deg); }
+}
+.butterfly-wing-left  { animation: wing-flap 0.8s ease-in-out infinite; transform-origin: right center; }
+.butterfly-wing-right { animation: wing-flap 0.8s ease-in-out infinite reverse; transform-origin: left center; }
+
+/* ─── Section Transitions ───────────────────── */
+.section-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.section-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Photo Hover ───────────────────────────── */
+.photo-card {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.photo-card:hover {
+  transform: scale(1.05) rotate(1deg);
+}
+
+/* ─── Milestone Line ────────────────────────── */
+.milestone-line::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, #FF6B9D, #C9B1FF, transparent);
+  transform: translateX(-50%);
+}
+
+/* ─── Letter Card ───────────────────────────── */
+.letter-card {
+  transform: rotate(var(--rotate, 0deg));
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.letter-card:hover {
+  transform: rotate(0deg) scale(1.03) translateY(-8px);
+  z-index: 10;
+}
+
+/* ─── Age Counter Digits ────────────────────── */
+.digit-roll {
+  display: inline-block;
+  animation: digit-roll-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes digit-roll-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ─── Magical Orb ───────────────────────────── */
+.orb {
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: float 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Sparkle ───────────────────────────────── */
+@keyframes sparkle {
+  0%, 100% { transform: scale(0) rotate(0deg);   opacity: 0; }
+  50%        { transform: scale(1) rotate(180deg); opacity: 1; }
+}
+.sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* ─── Text Readability Fixes ────────────────── */
+.text-readable      { text-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+.text-readable-dark { text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3); }
+
+/* Glass with stronger background for readability */
+.glass {
+  background: rgba(255,255,255,0.45) !important;
+}
+.glass-dark {
+  background: rgba(20,8,40,0.65) !important;
+}
+
+/* Subtitle & body copy on light gradient backgrounds */
+.hero-subtitle   { color: #6B2FA0 !important; font-weight: 600; }
+.hero-tagline    { color: #5A1F8A !important; }
+.stat-label-text { color: #5A1F8A !important; font-weight: 600; }
+
+/* Letter card text */
+.letter-body-text { color: rgba(26,10,46,0.85) !important; }
+
+/* Gallery caption text on hover */
