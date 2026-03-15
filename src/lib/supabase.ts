@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl      = (process.env.NEXT_PUBLIC_SUPABASE_URL      || '').trim()
+const supabaseAnonKey  = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY  || '').trim()
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -81,29 +81,26 @@ function toGalleryItem(
   }
 }
 
-// ─── Read ALL images from the bucket (paginated, both root + gallery/) ────────
+// ─── Read ALL images from the bucket (paginated) ─────────────────────────────
+// Only scans the 'gallery/' subfolder to avoid duplicates.
+// Falls back to root scan only if gallery/ returns 0 results.
 export async function getGalleryFromBucket(): Promise<GalleryItem[]> {
   try {
-    const [galleryFiles, rootFiles] = await Promise.all([
-      listAllFiles('gallery'),
-      listAllFiles(''),
-    ])
-
+    // Primary: scan gallery/ subfolder (where all uploads go)
+    const galleryFiles = await listAllFiles('gallery')
     const results: GalleryItem[] = []
-    const seenNames = new Set<string>()
 
     for (const f of galleryFiles) {
       const item = toGalleryItem(f, 'gallery')
-      if (item && !seenNames.has(item.id)) {
-        seenNames.add(item.id)
-        results.push(item)
-      }
+      if (item) results.push(item)
     }
-    for (const f of rootFiles) {
-      const item = toGalleryItem(f, '')
-      if (item && !seenNames.has(item.id)) {
-        seenNames.add(item.id)
-        results.push(item)
+
+    // Fallback: if gallery/ is empty, try root (older uploads)
+    if (results.length === 0) {
+      const rootFiles = await listAllFiles('')
+      for (const f of rootFiles) {
+        const item = toGalleryItem(f, '')
+        if (item) results.push(item)
       }
     }
 

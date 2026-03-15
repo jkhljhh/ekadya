@@ -180,8 +180,8 @@ export default function GallerySection({ items: initialItems }: Props) {
 
   return (
     <section ref={sectionRef} id="gallery" className="relative py-32 px-4 md:px-6 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#EAF0FF] via-[#F5EAFF] to-[#FFE8F5]" />
+      {/* Background — slightly darker so white card shadows are visible */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #dce8ff 0%, #ecdeff 50%, #ffd6e8 100%)' }} />
       <div className="orb absolute w-80 h-80 bg-[#FFD6E0] opacity-30 top-20 -right-20 pointer-events-none" />
       <div className="orb absolute w-60 h-60 bg-[#C9B1FF] opacity-20 bottom-20 -left-10 pointer-events-none" />
 
@@ -227,41 +227,61 @@ export default function GallerySection({ items: initialItems }: Props) {
             {items.map((item, i) => {
               const [c1, c2] = PLACEHOLDER_GRADIENTS[i % 6]
               const isNew = newItemIds.has(item.id)
-              const aspectClass = i % 4 === 0 ? 'aspect-square' : i % 4 === 1 ? 'aspect-[3/4]' : i % 4 === 2 ? 'aspect-[4/3]' : 'aspect-[2/3]'
+              // Vary aspect ratios using paddingBottom trick (bulletproof in all browsers)
+              const pb = i % 4 === 0 ? '100%' : i % 4 === 1 ? '133%' : i % 4 === 2 ? '75%' : '150%'
 
               return (
                 <div
                   key={item.id}
                   className={`break-inside-avoid mb-3 md:mb-4 cursor-pointer group transition-all duration-700 ${
-                    visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+                    visible ? 'opacity-100' : 'opacity-0'
                   }`}
                   style={{
                     transitionDelay: `${Math.min(i * 0.06, 0.6)}s`,
-                    transform: visible ? `rotate(${CARD_ROTATIONS[i % 8]})` : 'translateY(64px)',
+                    transform: visible ? `rotate(${CARD_ROTATIONS[i % 8]})` : 'translateY(40px)',
                   }}
                   onClick={() => openLightbox(i)}
                 >
+                  {/* paddingBottom aspect ratio wrapper — works everywhere */}
                   <div
-                    className={`relative ${aspectClass} rounded-2xl overflow-hidden shadow-lg transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.03] group-hover:rotate-0 group-hover:z-10`}
+                    className="rounded-2xl overflow-hidden shadow-lg group-hover:shadow-2xl"
                     style={{
-                      boxShadow: isNew
-                        ? '0 0 0 3px #FF6B9D, 0 0 30px rgba(255,107,157,0.5)'
-                        : undefined,
+                      position: 'relative',
+                      width: '100%',
+                      paddingBottom: pb,
+                      boxShadow: isNew ? '0 0 0 3px #FF6B9D, 0 0 30px rgba(255,107,157,0.5)' : undefined,
                       transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                      transform: 'translateZ(0)', // GPU layer
                     }}
                   >
-                    {/* Image or placeholder */}
+                    {/* All children absolutely positioned inside the padding box */}
                     {item.url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={item.url}
                         alt={item.caption || 'Ekadya'}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform 0.5s ease',
+                          display: 'block',
+                        }}
+                        className="group-hover:scale-105"
                       />
                     ) : (
                       <div
-                        className="absolute inset-0 flex flex-col items-center justify-center"
-                        style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: `linear-gradient(135deg, ${c1}, ${c2})`,
+                        }}
                       >
                         <div className="text-5xl" style={{ animation: `float ${3 + i * 0.3}s ease-in-out infinite` }}>
                           {PLACEHOLDER_EMOJIS[i % 6]}
@@ -269,14 +289,17 @@ export default function GallerySection({ items: initialItems }: Props) {
                       </div>
                     )}
 
-                    {/* "NEW" badge */}
+                    {/* NEW badge */}
                     {isNew && (
                       <div
-                        className="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-fairy text-white z-10"
+                        className="font-fairy text-white text-xs"
                         style={{
+                          position: 'absolute', top: 8, left: 8,
+                          padding: '2px 8px', borderRadius: 999,
                           background: 'linear-gradient(135deg, #FF6B9D, #C9B1FF)',
                           animation: 'pulse-soft 1s ease-in-out infinite',
                           boxShadow: '0 0 12px rgba(255,107,157,0.6)',
+                          zIndex: 10,
                         }}
                       >
                         ✨ New
@@ -284,16 +307,19 @@ export default function GallerySection({ items: initialItems }: Props) {
                     )}
 
                     {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                    <div
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{
+                        position: 'absolute', inset: 0,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.05) 60%, transparent 100%)',
+                        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                        padding: '10px',
+                      }}
+                    >
                       {item.caption && (
-                        <p className="font-fairy text-white text-xs leading-tight drop-shadow-lg">
-                          {item.caption}
-                        </p>
+                        <p className="font-fairy text-white text-xs leading-tight drop-shadow-lg">{item.caption}</p>
                       )}
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-white/60 text-xs font-fairy">tap to open</span>
-                        <span className="text-xs">🔍</span>
-                      </div>
+                      <p className="font-fairy text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>tap to open 🔍</p>
                     </div>
                   </div>
                 </div>
